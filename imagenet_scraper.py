@@ -6,10 +6,13 @@ import cv2
 import PIL.Image
 import urllib
 
-IMAGENET_SYSNETS = {}
+IMAGENET_SYSNETS = {"goldfish, Carassius auratus": "n01443537",
+                    "great white shark, white shark, man-eater, man-eating shark, Carcharodon carcharias": "n01484850",
+                    "monarch, monarch butterfly, milkweed butterfly, Danaus plexippus": "n02279972"
+                   }
 
 def get_imagenet_urls_from_sysnet(sysnet):
-    page = requests.get("http://www.image-net.org/api/text/imagenet.synset.geturls?wnid={}".format(sysnet)
+    page = requests.get("http://www.image-net.org/api/text/imagenet.synset.geturls?wnid={}".format(sysnet))
     soup = BeautifulSoup(page.content, 'html.parser')#puts the content of the website into the soup variable, each url on a different line
     str_soup=str(soup)#convert soup to string so it can be split
     split_urls=str_soup.split('\r\n')#split so each url is a different possition on a list
