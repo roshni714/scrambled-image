@@ -4,11 +4,11 @@ import numpy as np
 import requests
 import cv2
 import PIL.Image
-import urllib
+import urllib2
 
-IMAGENET_SYSNETS = {"goldfish, Carassius auratus": "n01443537",
-                    "great white shark, white shark, man-eater, man-eating shark, Carcharodon carcharias": "n01484850",
-                    "monarch, monarch butterfly, milkweed butterfly, Danaus plexippus": "n02279972"
+IMAGENET_SYSNETS = {"goldfish": "n01443537",
+                    "great_white_shark": "n01484850",
+                    "monarch_butterfly": "n02279972"
                    }
 
 def get_imagenet_urls_from_sysnet(sysnet):
@@ -24,7 +24,7 @@ input_shape = (img_rows, img_cols, 3)#format to store the images (rows, columns,
 def url_to_image(url):
     # download the image, convert it to a NumPy array, and then read
     # it into OpenCV format
-    resp = urllib.request.urlopen(url)
+    resp = urllib2.urlopen(url)
     image = np.asarray(bytearray(resp.read()), dtype="uint8")
     image = cv2.imdecode(image, cv2.IMREAD_COLOR)
     return image
@@ -34,8 +34,11 @@ for category in IMAGENET_SYSNETS:
 
     for i in range(len(urls)):
        if urls[i] != None:
-           image = url_to_image(urls[i])
-           if (len(image.shape)) == 3:
-              save_path = '/content/{}'.format(category) + "/img{}.jpg".format(i)
-              cv2.imwrite(save_path, image)
-              break
+           try:
+              image = url_to_image(urls[i])
+              if len(image.shape) == 3:
+                 save_path = 'content/{}'.format(category) + "-img{}.png".format(0)
+                 cv2.imwrite(save_path, image)
+                 break
+           except:
+              print("url not valid")
