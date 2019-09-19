@@ -5,11 +5,20 @@ import requests
 import cv2
 import PIL.Image
 import urllib2
+from dic import IMAGENET_SYSNETS
+import os
+import pandas as pd
 
-IMAGENET_SYSNETS = {"goldfish": "n01443537",
-                    "great_white_shark": "n01484850",
-                    "monarch_butterfly": "n02279972"
-                   }
+def get_categories_of_interest():
+
+    df = pd.read_csv("match_to_sample.csv")
+    categories = set()
+    for i in range(len(df)):
+        categories.add(df["Q"][i])
+        categories.add(df["IA1"][i])
+        categories.add(df["IA2"][i])
+        categories.add(df["IA3"][i])
+    return categories
 
 def get_imagenet_urls_from_sysnet(sysnet):
     page = requests.get("http://www.image-net.org/api/text/imagenet.synset.geturls?wnid={}".format(sysnet))
@@ -29,16 +38,20 @@ def url_to_image(url):
     image = cv2.imdecode(image, cv2.IMREAD_COLOR)
     return image
 
-for category in IMAGENET_SYSNETS:
-    urls = get_imagenet_urls_from_sysnet(IMAGENET_SYSNETS[category])
-
-    for i in range(len(urls)):
-       if urls[i] != None:
-           try:
-              image = url_to_image(urls[i])
-              if len(image.shape) == 3:
-                 save_path = 'content/{}'.format(category) + "-img{}.png".format(0)
-                 cv2.imwrite(save_path, image)
-                 break
-           except:
-              print("url not valid")
+categories = get_categories_of_interest()
+for category in categories:
+    print(category)
+    if not os.path.isdir("content/{}".format(category)):
+         urls = get_imagenet_urls_from_sysnet(IMAGENET_SYSNETS[category])
+         count = 0
+         os.mkdir("content/{}".format(category))
+         for i in range(len(urls)):
+            if urls[i] != None and count < 2:
+                try:
+                   image = url_to_image(urls[i])
+                   if len(image.shape) == 3:
+                       save_path = 'content/{}'.format(category) + "/img{}.png".format(count)
+                       cv2.imwrite(save_path, image)
+                       count += 1
+                except:
+                   print("url not valid")
